@@ -787,6 +787,23 @@ function copyWorkerCode(){
 function merge(a,b){const m={};[...a,...b].forEach(r=>m[r.date]=r);return Object.values(m).sort((x,y)=>x.date.localeCompare(y.date));}`;
   navigator.clipboard.writeText(code).then(()=>showToast('✓ 程式碼已複製'));
 }
+
+// ══ 離開頁面自動儲存 ══
+window.addEventListener('beforeunload', ()=>{
+  // 儲存所有資料到 localStorage
+  lset('bodyRecords', records);
+  lset('bodyGoals', goals);
+  lset('bodyInventory', inventory);
+  lset('bodyReminders', reminders);
+  lset('bodyAutoRefresh', autoRefreshCfg);
+  // 推送到雲端（使用 sendBeacon 確保離開時也能送出）
+  if(syncCfg.url){
+    const payload=JSON.stringify({records,goals,inventory});
+    navigator.sendBeacon
+      ? navigator.sendBeacon(syncCfg.url+'/sync', new Blob([payload],{type:'application/json'}))
+      : fetch(syncCfg.url+'/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Token':syncCfg.token||''},body:payload,keepalive:true}).catch(()=>{});
+  }
+});
 </script>
 </body>
 </html>
