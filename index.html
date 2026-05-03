@@ -9,86 +9,146 @@
 <title>體態記錄</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{--bg:#f5f5f7;--card:#ffffff;--text:#1c1c1e;--text2:#6e6e73;--border:rgba(0,0,0,0.1);--accent:#178CBA;--green:#1D9E75;--orange:#D85A30;--input-bg:#f2f2f7;--tab-bg:#e5e5ea;--tab-active:#ffffff}
-@media(prefers-color-scheme:dark){:root{--bg:#000000;--card:#1c1c1e;--text:#ffffff;--text2:#8e8e93;--border:rgba(255,255,255,0.1);--input-bg:#2c2c2e;--tab-bg:#2c2c2e;--tab-active:#3a3a3c}}
+:root{--bg:#f5f5f7;--card:#fff;--text:#1c1c1e;--text2:#6e6e73;--border:rgba(0,0,0,0.1);--accent:#178CBA;--green:#1D9E75;--orange:#D85A30;--input-bg:#f2f2f7;--tab-bg:#e5e5ea;--tab-active:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--text:#fff;--text2:#8e8e93;--border:rgba(255,255,255,0.1);--input-bg:#2c2c2e;--tab-bg:#2c2c2e;--tab-active:#3a3a3c}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,'SF Pro Display',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
-.top-bar{background:var(--card);border-bottom:0.5px solid var(--border);padding:16px 20px 12px;position:sticky;top:0;z-index:10}
-.top-bar h1{font-size:22px;font-weight:600}
-.top-bar .date-label{font-size:13px;color:var(--text2);margin-top:2px}
-.tab-bar{display:flex;gap:4px;padding:4px;background:var(--tab-bg);border-radius:12px;margin:16px 16px 0}
-.tab{flex:1;padding:8px 4px;font-size:13px;font-weight:500;text-align:center;border:none;background:transparent;color:var(--text2);border-radius:9px;cursor:pointer;transition:all .2s}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px}
+.top-bar{background:var(--card);border-bottom:.5px solid var(--border);padding:14px 20px 10px;position:sticky;top:0;z-index:10}
+.top-bar h1{font-size:20px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.sync-btn{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;border:none;cursor:pointer;background:var(--input-bg);color:var(--text2)}
+.sync-ok{color:var(--green)}
+.date-label{font-size:13px;color:var(--text2);margin-top:2px}
+.tab-bar{display:flex;gap:3px;padding:4px;background:var(--tab-bg);border-radius:12px;margin:14px 14px 0}
+.tab{flex:1;padding:7px 2px;font-size:11px;font-weight:500;text-align:center;border:none;background:transparent;color:var(--text2);border-radius:9px;cursor:pointer;transition:all .2s}
 .tab.active{background:var(--tab-active);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.section{display:none;padding:16px}.section.active{display:block}
-.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px}
-.card-title{font-size:13px;color:var(--text2);font-weight:500;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.3px}
+.section{display:none;padding:14px}.section.active{display:block}
+.card{background:var(--card);border-radius:16px;padding:15px;margin-bottom:12px}
+.card-title{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-row{margin-bottom:10px}
-.form-label{font-size:12px;color:var(--text2);margin-bottom:5px;display:block;font-weight:500}
-input[type=number],input[type=text],textarea,select{width:100%;padding:10px 12px;font-size:16px;border:none;border-radius:10px;background:var(--input-bg);color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none}
-textarea{min-height:72px;resize:none;line-height:1.5}
+.form-label{font-size:12px;color:var(--text2);margin-bottom:4px;display:block;font-weight:500}
+input[type=number],input[type=text],input[type=time],textarea{width:100%;padding:10px 12px;font-size:16px;border:none;border-radius:10px;background:var(--input-bg);color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none}
+textarea{min-height:66px;resize:none;line-height:1.5}
 input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
-.btn-primary{width:100%;padding:14px;font-size:16px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:4px}
-.btn-primary:active{opacity:0.85;transform:scale(0.99)}
-.btn-secondary{padding:8px 16px;font-size:13px;font-weight:500;background:var(--input-bg);color:var(--text);border:none;border-radius:10px;cursor:pointer}
-.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.metric-card{background:var(--input-bg);border-radius:12px;padding:12px 14px}
-.metric-label{font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500}
-.metric-value{font-size:24px;font-weight:600}
-.metric-unit{font-size:13px;color:var(--text2);font-weight:400}
-.metric-diff{font-size:12px;margin-top:3px}
+.btn-primary{width:100%;padding:13px;font-size:16px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:4px}
+.btn-primary:active{opacity:.85;transform:scale(.99)}
+.btn-secondary{padding:8px 14px;font-size:13px;font-weight:500;background:var(--input-bg);color:var(--text);border:none;border-radius:10px;cursor:pointer}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.metric-card{background:var(--input-bg);border-radius:12px;padding:11px 13px}
+.metric-label{font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:500}
+.metric-value{font-size:21px;font-weight:600}
+.metric-unit{font-size:12px;color:var(--text2);font-weight:400}
+.metric-diff{font-size:11px;margin-top:2px}
 .diff-down{color:var(--green)}.diff-up{color:var(--orange)}.diff-zero{color:var(--text2)}
-.chart-selector{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-.chart-btn{padding:6px 12px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-weight:500}
+.chart-selector{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chart-btn{padding:5px 11px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-weight:500}
 .chart-btn.active{background:var(--accent);color:#fff;border-color:transparent}
-.chart-wrap{position:relative;width:100%;height:220px}
-.log-item{border-bottom:0.5px solid var(--border);padding:12px 0}
+.chart-wrap{position:relative;width:100%;height:200px}
+.log-item{border-bottom:.5px solid var(--border);padding:11px 0}
 .log-item:last-child{border-bottom:none}
-.log-date{font-size:13px;color:var(--text2);margin-bottom:5px;font-weight:500}
-.log-values{font-size:14px;display:flex;gap:12px;flex-wrap:wrap}
-.log-note{font-size:13px;color:var(--text2);margin-top:5px;font-style:italic}
-.goal-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.log-date{font-size:13px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.log-values{font-size:13px;display:flex;gap:10px;flex-wrap:wrap}
+.log-note{font-size:12px;color:var(--text2);margin-top:4px;font-style:italic}
+.goal-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)}
 .goal-row:last-child{border-bottom:none}
 .goal-label{font-size:14px;font-weight:500}
 .goal-sub{font-size:12px;color:var(--text2);margin-top:2px}
-.goal-val{font-size:14px;font-weight:600;text-align:right}
-.progress-bar{height:5px;background:var(--input-bg);border-radius:3px;margin-top:6px;overflow:hidden;width:160px}
-.progress-fill{height:100%;border-radius:3px;background:var(--green)}
-.progress-fill.danger{background:var(--orange)}
-.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600}
+.goal-val{font-size:13px;font-weight:600;text-align:right}
+.prog-bar{height:5px;background:var(--input-bg);border-radius:3px;margin-top:5px;overflow:hidden;width:130px}
+.prog-fill{height:100%;border-radius:3px;background:var(--green)}
+.prog-fill.danger{background:var(--orange)}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin-left:5px;font-weight:600}
 .badge-good{background:#E1F5EE;color:#0F6E56}.badge-warn{background:#FAEEDA;color:#854F0B}
-.empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:15px}
+.empty{text-align:center;padding:32px 16px;color:var(--text2);font-size:14px}
 .export-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .export-row span{font-size:17px;font-weight:600}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:100;white-space:nowrap}
+.divider{height:.5px;background:var(--border);margin:10px 0 14px}
+.water-bar{height:8px;background:var(--input-bg);border-radius:4px;overflow:hidden;margin-top:6px}
+.water-fill{height:100%;border-radius:4px;background:#178CBA;transition:width .4s}
+/* inventory */
+.inv-group-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.inv-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)}
+.inv-item:last-child{border-bottom:none}
+.inv-name{font-size:14px;font-weight:500}
+.inv-unit{font-size:12px;color:var(--text2)}
+.inv-controls{display:flex;align-items:center;gap:12px}
+.inv-qty{font-size:20px;font-weight:600;min-width:28px;text-align:center}
+.inv-btn{width:34px;height:34px;border-radius:50%;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--input-bg);color:var(--text)}
+.inv-btn.plus{background:var(--accent);color:#fff}
+.inv-btn:active{opacity:.7}
+/* reminder */
+.reminder-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:.5px solid var(--border)}
+.reminder-item:last-child{border-bottom:none}
+.reminder-label{font-size:14px;font-weight:500}
+.reminder-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.reminder-right{display:flex;align-items:center;gap:10px}
+.reminder-time{width:110px;font-size:15px;padding:7px 10px}
+.toggle{position:relative;width:44px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;border-radius:26px;background:var(--input-bg);cursor:pointer;transition:.3s}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked + .toggle-slider{background:var(--green)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(18px)}
+.notif-banner{background:#E1F5EE;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#0F6E56;display:none}
+.notif-deny{background:#FAEEDA;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#854F0B;display:none}
+/* toast */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.82);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:100;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%}
+.modal h2{font-size:18px;font-weight:600;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.modal input{margin-bottom:12px}
+.modal .close-btn{float:right;font-size:14px;color:var(--text2);background:none;border:none;cursor:pointer;margin-top:-28px}
 </style>
 </head>
 <body>
+
 <div class="top-bar">
-  <h1>體態記錄</h1>
+  <h1>體態記錄 <button class="sync-btn" id="syncBtn" onclick="triggerSync()">⟳ 同步</button></h1>
   <div class="date-label" id="todayLabel"></div>
 </div>
+
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('record')">記錄</button>
   <button class="tab" onclick="switchTab('trend')">趨勢</button>
   <button class="tab" onclick="switchTab('history')">歷史</button>
   <button class="tab" onclick="switchTab('goal')">目標</button>
+  <button class="tab" onclick="switchTab('inv')">庫存</button>
+  <button class="tab" onclick="switchTab('remind')">提醒</button>
 </div>
+
+<!-- 記錄 -->
 <div class="section active" id="sec-record">
   <div class="card">
-    <div class="card-title">今日數據</div>
+    <div class="card-title">身體數據</div>
     <div class="grid2">
-      <div class="form-row"><label class="form-label">體重（kg）</label><input type="number" id="inp-weight" step="0.1" inputmode="decimal" placeholder="例：65.5"></div>
-      <div class="form-row"><label class="form-label">體脂率（%）</label><input type="number" id="inp-fat" step="0.1" inputmode="decimal" placeholder="例：22.0"></div>
-      <div class="form-row"><label class="form-label">BMI</label><input type="number" id="inp-bmi" step="0.1" inputmode="decimal" placeholder="例：22.5"></div>
-      <div class="form-row"><label class="form-label">內臟脂肪</label><input type="number" id="inp-visceral" step="1" inputmode="numeric" placeholder="例：8"></div>
+      <div class="form-row"><label class="form-label">體重（kg）</label><input type="number" id="inp-weight" step="0.1" inputmode="decimal" placeholder="65.5"></div>
+      <div class="form-row"><label class="form-label">體脂率（%）</label><input type="number" id="inp-fat" step="0.1" inputmode="decimal" placeholder="22.0"></div>
+      <div class="form-row"><label class="form-label">BMI</label><input type="number" id="inp-bmi" step="0.1" inputmode="decimal" placeholder="22.5"></div>
+      <div class="form-row"><label class="form-label">內臟脂肪</label><input type="number" id="inp-visceral" step="1" inputmode="numeric" placeholder="8"></div>
     </div>
+    <div class="divider"></div>
+    <div class="card-title">飲水與活力</div>
+    <div class="grid2">
+      <div class="form-row"><label class="form-label">喝水量（cc）</label><input type="number" id="inp-water" step="50" inputmode="numeric" placeholder="2000"></div>
+      <div class="form-row"><label class="form-label">活力飲品（cc）</label><input type="number" id="inp-vitality" step="10" inputmode="numeric" placeholder="250"></div>
+    </div>
+    <div id="water-wrap" style="display:none;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:3px">
+        <span>今日喝水進度</span><span id="water-label"></span>
+      </div>
+      <div class="water-bar"><div class="water-fill" id="water-bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="divider"></div>
     <div class="form-row"><label class="form-label">備註（飲食、運動、狀況）</label><textarea id="inp-note" placeholder="今天走了30分鐘，飲食清淡..."></textarea></div>
     <button class="btn-primary" onclick="saveRecord()">儲存今日記錄</button>
   </div>
   <div id="today-summary"></div>
 </div>
+
+<!-- 趨勢 -->
 <div class="section" id="sec-trend">
   <div class="card">
     <div class="chart-selector">
@@ -96,11 +156,14 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
       <button class="chart-btn" onclick="selectChart('fat',this)">體脂率</button>
       <button class="chart-btn" onclick="selectChart('bmi',this)">BMI</button>
       <button class="chart-btn" onclick="selectChart('visceral',this)">內臟脂肪</button>
+      <button class="chart-btn" onclick="selectChart('water',this)">喝水</button>
     </div>
-    <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="體態趨勢折線圖">體態趨勢圖表</canvas></div>
+    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
   </div>
   <div class="metric-grid" id="statsGrid"></div>
 </div>
+
+<!-- 歷史 -->
 <div class="section" id="sec-history">
   <div class="export-row">
     <span>所有記錄</span>
@@ -108,41 +171,473 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
   </div>
   <div class="card" id="historyList"></div>
 </div>
+
+<!-- 目標 -->
 <div class="section" id="sec-goal">
   <div class="card">
     <div class="card-title">設定目標</div>
     <div class="grid2">
-      <div class="form-row"><label class="form-label">目標體重（kg）</label><input type="number" id="goal-weight" step="0.1" inputmode="decimal" placeholder="例：60.0"></div>
-      <div class="form-row"><label class="form-label">目標體脂率（%）</label><input type="number" id="goal-fat" step="0.1" inputmode="decimal" placeholder="例：18.0"></div>
-      <div class="form-row"><label class="form-label">目標內臟脂肪</label><input type="number" id="goal-visceral" step="1" inputmode="numeric" placeholder="例：5"></div>
+      <div class="form-row"><label class="form-label">目標體重（kg）</label><input type="number" id="goal-weight" step="0.1" inputmode="decimal" placeholder="60.0"></div>
+      <div class="form-row"><label class="form-label">目標體脂率（%）</label><input type="number" id="goal-fat" step="0.1" inputmode="decimal" placeholder="18.0"></div>
+      <div class="form-row"><label class="form-label">目標內臟脂肪</label><input type="number" id="goal-visceral" step="1" inputmode="numeric" placeholder="5"></div>
+      <div class="form-row"><label class="form-label">每日喝水目標（cc）</label><input type="number" id="goal-water" step="100" inputmode="numeric" placeholder="2500"></div>
     </div>
     <button class="btn-primary" onclick="saveGoals()">儲存目標</button>
   </div>
   <div class="card" id="goalProgress"></div>
 </div>
+
+<!-- 庫存 -->
+<div class="section" id="sec-inv">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:17px;font-weight:600">庫存管理</span>
+    <button class="btn-secondary" onclick="saveInventory()">儲存庫存</button>
+  </div>
+  <div class="card">
+    <div class="inv-group-title">🥛 蛋白粉（罐）</div>
+    <div id="inv-protein"></div>
+  </div>
+  <div class="card">
+    <div class="inv-group-title">💊 補充品（瓶）</div>
+    <div id="inv-supplement"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">庫存警示</div>
+    <div id="inv-alert"></div>
+  </div>
+</div>
+
+<!-- 提醒 -->
+<div class="section" id="sec-remind">
+  <div class="notif-banner" id="notif-ok">✅ 通知已開啟！記得讓網頁保持開啟或存到桌面使用。</div>
+  <div class="notif-deny" id="notif-deny">⚠️ 通知被封鎖。請到 Safari 設定 → 網站設定 → 通知，允許此網站。</div>
+
+  <div class="card">
+    <div class="card-title">💧 喝水提醒設定</div>
+    <div id="reminder-list"></div>
+    <button class="btn-primary" style="margin-top:14px" onclick="saveReminders()">儲存提醒設定</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">說明</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8">
+      💡 提醒功能需要 <b>允許通知</b> 且 <b>保持網頁開啟</b><br>
+      📱 建議將網頁 <b>加入主畫面</b> 使用效果最佳<br>
+      🔔 通知會在設定時間自動彈出，顯示今日喝水進度<br>
+      ⏰ 如果關閉瀏覽器，提醒將暫停直到重新開啟
+    </div>
+  </div>
+
+  <button class="btn-secondary" style="width:100%;margin-top:4px" onclick="testNotif()">🔔 測試通知</button>
+</div>
+
+<!-- Cloudflare 同步 Modal -->
+<div class="modal-overlay" id="setupModal" style="display:none">
+  <div class="modal">
+    <h2>設定雲端同步</h2>
+    <button class="close-btn" onclick="closeModal()">✕</button>
+    <p>輸入 Cloudflare Worker 網址，所有裝置自動同步。</p>
+    <div class="form-row">
+      <label class="form-label">Worker 網址</label>
+      <input type="text" id="cf-url" placeholder="https://body-tracker.你的帳號.workers.dev">
+    </div>
+    <div class="form-row">
+      <label class="form-label">自訂密碼（保護資料）</label>
+      <input type="text" id="cf-token" placeholder="例如：william2025">
+    </div>
+    <button class="btn-primary" onclick="saveSyncConfig()">儲存並同步</button>
+    <div style="margin-top:14px;font-size:13px;color:var(--text2);line-height:1.8">
+      📋 <b>設定步驟：</b><br>
+      1. 到 cloudflare.com 免費註冊<br>
+      2. Workers &amp; Pages → Create Worker<br>
+      3. 貼上程式碼 → Deploy<br>
+      4. 把 Worker 網址填入上方
+    </div>
+    <button class="btn-secondary" style="margin-top:10px;width:100%" onclick="copyWorkerCode()">📋 複製 Worker 程式碼</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
 <script>
+// ══ 常數 ══
+const PROTEIN=['草莓','巧克力','巧餅','拿鐵','香草'];
+const SUPPS=['享纖','草濰','細洗','甲殼','濃縮液'];
+const CHART_KEYS={weight:'體重',fat:'體脂率',bmi:'BMI',visceral:'內臟脂肪',water:'喝水'};
+const UNITS={weight:'kg',fat:'%',bmi:'',visceral:'',water:'cc'};
+const COLORS={weight:'#178CBA',fat:'#D85A30',bmi:'#7F77DD',visceral:'#1D9E75',water:'#5AABFF'};
+const ENCOURAGE=[
+  '喝水是最簡單的美容秘方！💧',
+  '補充水分，讓身體更有活力！🌊',
+  '每一口水都是對身體的愛護 💙',
+  '喝水燃脂，你在變美的路上！✨',
+  '記得喝水，今天又往目標前進一步 💪',
+  '水分充足，皮膚水嫩嫩！🌟',
+  '喝水助代謝，繼續加油！🔥',
+];
+const DEFAULT_REMINDERS=[
+  {id:'breakfast',label:'早餐飯前',sub:'幫助消化，啟動代謝',time:'07:30',enabled:true},
+  {id:'lunch',label:'午餐飯前',sub:'控制食慾，補充水分',time:'11:30',enabled:true},
+  {id:'dinner',label:'晚餐飯前',sub:'提醒補水，促進消化',time:'17:30',enabled:true},
+  {id:'sleep',label:'睡前提醒',sub:'最後一杯水，明天更有精神',time:'21:30',enabled:true},
+];
+
+// ══ 狀態 ══
 let records=JSON.parse(localStorage.getItem('bodyRecords')||'[]');
 let goals=JSON.parse(localStorage.getItem('bodyGoals')||'{}');
-let currentChart='weight';
-let chartInstance=null;
-const keys={weight:'體重',fat:'體脂率',bmi:'BMI',visceral:'內臟脂肪'};
-const units={weight:'kg',fat:'%',bmi:'',visceral:''};
-const colors={weight:'#178CBA',fat:'#D85A30',bmi:'#7F77DD',visceral:'#1D9E75'};
-function today(){return new Date().toISOString().slice(0,10)}
+let inventory=JSON.parse(localStorage.getItem('bodyInventory')||'{}');
+let syncCfg=JSON.parse(localStorage.getItem('bodySyncCfg')||'{}');
+let reminders=JSON.parse(localStorage.getItem('bodyReminders')||JSON.stringify(DEFAULT_REMINDERS));
+let currentChart='weight', chartInstance=null;
+let reminderTimers=[];
+
+// ══ 初始化 ══
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
-function switchTab(name){const names=['record','trend','history','goal'];document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+name).classList.add('active');if(name==='trend')renderTrend();if(name==='history')renderHistory();if(name==='goal')renderGoals()}
-function saveRecord(){const w=parseFloat(document.getElementById('inp-weight').value);const f=parseFloat(document.getElementById('inp-fat').value);const b=parseFloat(document.getElementById('inp-bmi').value);const v=parseFloat(document.getElementById('inp-visceral').value);const note=document.getElementById('inp-note').value.trim();if(isNaN(w)&&isNaN(f)&&isNaN(b)&&isNaN(v)){showToast('請至少輸入一項數值');return}const d=today();const idx=records.findIndex(r=>r.date===d);const rec={date:d,weight:isNaN(w)?null:w,fat:isNaN(f)?null:f,bmi:isNaN(b)?null:b,visceral:isNaN(v)?null:v,note};if(idx>=0)records[idx]=rec;else records.push(rec);records.sort((a,b)=>a.date.localeCompare(b.date));localStorage.setItem('bodyRecords',JSON.stringify(records));['weight','fat','bmi','visceral','note'].forEach(k=>document.getElementById('inp-'+k).value='');renderTodaySummary();showToast('✓ 記錄已儲存')}
-function renderTodaySummary(){const d=today();const rec=records.find(r=>r.date===d);const el=document.getElementById('today-summary');if(!rec){el.innerHTML='';return}el.innerHTML=`<div class="card"><div class="card-title">今日已記錄</div><div class="metric-grid">${['weight','fat','bmi','visceral'].filter(k=>rec[k]!=null).map(k=>`<div class="metric-card"><div class="metric-label">${keys[k]}</div><div class="metric-value">${rec[k]}<span class="metric-unit"> ${units[k]}</span></div></div>`).join('')}</div>${rec.note?`<div style="font-size:13px;color:var(--text2);font-style:italic;margin-top:4px">${rec.note}</div>`:''}</div>`}
-function selectChart(key,btn){currentChart=key;document.querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTrend()}
-function renderTrend(){const data=records.filter(r=>r[currentChart]!=null);if(data.length===0){if(chartInstance){chartInstance.destroy();chartInstance=null}document.getElementById('statsGrid').innerHTML=`<div class="empty" style="grid-column:span 2">尚無${keys[currentChart]}數據</div>`;return}const labels=data.map(r=>r.date.slice(5));const vals=data.map(r=>r[currentChart]);const col=colors[currentChart];const isDark=matchMedia('(prefers-color-scheme: dark)').matches;const gridColor=isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';const tickColor=isDark?'#8e8e93':'#6e6e73';if(chartInstance)chartInstance.destroy();chartInstance=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels,datasets:[{label:keys[currentChart],data:vals,borderColor:col,backgroundColor:col+'22',fill:true,tension:0.35,pointRadius:4,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y} ${units[currentChart]}`}}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11},maxTicksLimit:7}},y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}}}}}})}
-function renderStats(vals,data){const latest=vals[vals.length-1];const first=vals[0];const min=Math.min(...vals);const max=Math.max(...vals);const diff=(latest-first).toFixed(1);const diffStr=diff>0?`+${diff}`:diff;const isGoodDown=['fat','visceral','weight'].includes(currentChart);const diffCls=parseFloat(diff)===0?'diff-zero':(parseFloat(diff)<0?(isGoodDown?'diff-down':'diff-up'):(isGoodDown?'diff-up':'diff-down'));document.getElementById('statsGrid').innerHTML=`<div class="metric-card"><div class="metric-label">最新值</div><div class="metric-value">${latest}<span class="metric-unit"> ${units[currentChart]}</span></div><div class="metric-diff ${diffCls}">相較起始 ${diffStr}</div></div><div class="metric-card"><div class="metric-label">記錄天數</div><div class="metric-value">${data.length}<span class="metric-unit"> 天</span></div></div><div class="metric-card"><div class="metric-label">最低值</div><div class="metric-value">${min}<span class="metric-unit"> ${units[currentChart]}</span></div></div><div class="metric-card"><div class="metric-label">最高值</div><div class="metric-value">${max}<span class="metric-unit"> ${units[currentChart]}</span></div></div>`}
-function renderHistory(){const el=document.getElementById('historyList');if(records.length===0){el.innerHTML=`<div class="empty">尚無記錄<br><span style="font-size:13px">去「記錄」頁面新增第一筆！</span></div>`;return}el.innerHTML=[...records].reverse().map(r=>`<div class="log-item"><div class="log-date">${r.date}</div><div class="log-values">${r.weight!=null?`<span>體重 <b>${r.weight}</b>kg</span>`:''} ${r.fat!=null?`<span>體脂 <b>${r.fat}</b>%</span>`:''} ${r.bmi!=null?`<span>BMI <b>${r.bmi}</b></span>`:''} ${r.visceral!=null?`<span>內臟 <b>${r.visceral}</b></span>`:''}</div>${r.note?`<div class="log-note">${r.note}</div>`:''}</div>`).join('')}
-function saveGoals(){goals.weight=parseFloat(document.getElementById('goal-weight').value)||null;goals.fat=parseFloat(document.getElementById('goal-fat').value)||null;goals.visceral=parseFloat(document.getElementById('goal-visceral').value)||null;localStorage.setItem('bodyGoals',JSON.stringify(goals));renderGoals();showToast('✓ 目標已儲存')}
-function renderGoals(){if(goals.weight)document.getElementById('goal-weight').value=goals.weight;if(goals.fat)document.getElementById('goal-fat').value=goals.fat;if(goals.visceral)document.getElementById('goal-visceral').value=goals.visceral;const latest=records[records.length-1];const el=document.getElementById('goalProgress');if(!latest){el.innerHTML=`<div class="empty">尚無記錄，無法顯示進度</div>`;return}const rows=[{key:'weight',label:'體重',unit:'kg'},{key:'fat',label:'體脂率',unit:'%'},{key:'visceral',label:'內臟脂肪',unit:''}].filter(r=>goals[r.key]&&latest[r.key]!=null);if(rows.length===0){el.innerHTML=`<div class="empty">請先設定目標</div>`;return}el.innerHTML=`<div class="card-title">目標進度</div>`+rows.map(r=>{const cur=latest[r.key],goal=goals[r.key];const startRec=records.find(x=>x[r.key]!=null);const start=startRec?startRec[r.key]:cur;const total=Math.abs(start-goal)||1;const done=Math.abs(cur-goal);const pct=Math.min(100,Math.round((1-done/total)*100));const reached=cur<=goal;return`<div class="goal-row"><div><div class="goal-label">${r.label}</div><div class="goal-sub">目前 ${cur}${r.unit} → 目標 ${goal}${r.unit}</div><div class="progress-bar"><div class="progress-fill${reached?'':' danger'}" style="width:${pct}%"></div></div></div><div class="goal-val">${pct}%${reached?'<span class="badge badge-good">達標</span>':'<span class="badge badge-warn">加油</span>'}</div></div>`}).join('')}
-function exportCSV(){if(records.length===0){showToast('尚無記錄可匯出');return}const header='日期,體重(kg),體脂率(%),BMI,內臟脂肪,備註';const rows=records.map(r=>[r.date,r.weight??'',r.fat??'',r.bmi??'',r.visceral??'',`"${(r.note||'').replace(/"/g,'""')}"`].join(','));const csv='\uFEFF'+[header,...rows].join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`體態記錄_${today()}.csv`;a.click();showToast('✓ CSV 已匯出')}
 renderTodaySummary();
+updateSyncBtn();
+if(syncCfg.url) triggerSync(true);
+initNotifications();
+scheduleAllReminders();
+
+// ══ Toast ══
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ══ 分頁 ══
+function switchTab(name){
+  const names=['record','trend','history','goal','inv','remind'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  if(name==='trend')renderTrend();
+  if(name==='history')renderHistory();
+  if(name==='goal')renderGoals();
+  if(name==='inv')renderInventory();
+  if(name==='remind')renderReminders();
+}
+
+// ══ 記錄 ══
+function saveRecord(){
+  const w=pv('inp-weight'),f=pv('inp-fat'),b=pv('inp-bmi'),
+        v=pv('inp-visceral'),wa=pv('inp-water'),vi=pv('inp-vitality');
+  const note=document.getElementById('inp-note').value.trim();
+  if([w,f,b,v,wa,vi].every(isNaN)){showToast('請至少輸入一項數值');return}
+  const d=today();
+  const rec={date:d,weight:nn(w),fat:nn(f),bmi:nn(b),visceral:nn(v),water:nn(wa),vitality:nn(vi),note};
+  const idx=records.findIndex(r=>r.date===d);
+  if(idx>=0)records[idx]=rec;else records.push(rec);
+  records.sort((a,b)=>a.date.localeCompare(b.date));
+  lset('bodyRecords',records);
+  ['weight','fat','bmi','visceral','water','vitality','note'].forEach(k=>document.getElementById('inp-'+k).value='');
+  renderTodaySummary();
+  pushSync();
+  showToast('✓ 記錄已儲存');
+}
+function pv(id){return parseFloat(document.getElementById(id).value)}
+function nn(v){return isNaN(v)?null:v}
+function today(){return new Date().toISOString().slice(0,10)}
+function lset(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+function renderTodaySummary(){
+  const d=today(),rec=records.find(r=>r.date===d);
+  const ww=document.getElementById('water-wrap');
+  if(rec?.water&&goals.water){
+    const pct=Math.min(100,Math.round(rec.water/goals.water*100));
+    document.getElementById('water-bar-fill').style.width=pct+'%';
+    document.getElementById('water-label').textContent=rec.water+'cc / '+goals.water+'cc ('+pct+'%)';
+    ww.style.display='block';
+  } else ww.style.display='none';
+  const el=document.getElementById('today-summary');
+  if(!rec){el.innerHTML='';return}
+  const fields=[
+    {k:'weight',l:'體重',u:'kg'},{k:'fat',l:'體脂率',u:'%'},
+    {k:'bmi',l:'BMI',u:''},{k:'visceral',l:'內臟脂肪',u:''},
+    {k:'water',l:'喝水',u:'cc'},{k:'vitality',l:'活力飲品',u:'cc'}
+  ].filter(x=>rec[x.k]!=null);
+  el.innerHTML=`<div class="card"><div class="card-title">今日已記錄</div><div class="metric-grid">
+    ${fields.map(x=>`<div class="metric-card"><div class="metric-label">${x.l}</div>
+    <div class="metric-value">${rec[x.k]}<span class="metric-unit"> ${x.u}</span></div></div>`).join('')}
+  </div>${rec.note?`<div style="font-size:12px;color:var(--text2);font-style:italic;margin-top:6px">${rec.note}</div>`:''}</div>`;
+}
+
+// ══ 趨勢 ══
+function selectChart(key,btn){
+  currentChart=key;
+  document.querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderTrend();
+}
+function renderTrend(){
+  const data=records.filter(r=>r[currentChart]!=null);
+  if(!data.length){
+    if(chartInstance){chartInstance.destroy();chartInstance=null}
+    document.getElementById('statsGrid').innerHTML=`<div class="empty" style="grid-column:span 2">尚無${CHART_KEYS[currentChart]}數據</div>`;return
+  }
+  const labels=data.map(r=>r.date.slice(5)),vals=data.map(r=>r[currentChart]);
+  const col=COLORS[currentChart];
+  const isDark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const gc=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)',tc=isDark?'#8e8e93':'#6e6e73';
+  if(chartInstance)chartInstance.destroy();
+  chartInstance=new Chart(document.getElementById('trendChart'),{
+    type:'line',
+    data:{labels,datasets:[{data:vals,borderColor:col,backgroundColor:col+'22',fill:true,tension:.35,pointRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y} ${UNITS[currentChart]||''}`}}},
+      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},maxTicksLimit:7}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11}}}}}
+  });
+  const latest=vals[vals.length-1],first=vals[0],min=Math.min(...vals),max=Math.max(...vals);
+  const diff=(latest-first).toFixed(1),diffStr=diff>0?`+${diff}`:diff;
+  const gd=['fat','visceral','weight'].includes(currentChart);
+  const cls=parseFloat(diff)===0?'diff-zero':parseFloat(diff)<0?(gd?'diff-down':'diff-up'):(gd?'diff-up':'diff-down');
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="metric-card"><div class="metric-label">最新值</div><div class="metric-value">${latest}<span class="metric-unit"> ${UNITS[currentChart]||''}</span></div><div class="metric-diff ${cls}">相較起始 ${diffStr}</div></div>
+    <div class="metric-card"><div class="metric-label">記錄天數</div><div class="metric-value">${data.length}<span class="metric-unit"> 天</span></div></div>
+    <div class="metric-card"><div class="metric-label">最低值</div><div class="metric-value">${min}<span class="metric-unit"> ${UNITS[currentChart]||''}</span></div></div>
+    <div class="metric-card"><div class="metric-label">最高值</div><div class="metric-value">${max}<span class="metric-unit"> ${UNITS[currentChart]||''}</span></div></div>`;
+}
+
+// ══ 歷史 ══
+function renderHistory(){
+  const el=document.getElementById('historyList');
+  if(!records.length){el.innerHTML=`<div class="empty">尚無記錄</div>`;return}
+  el.innerHTML=[...records].reverse().map(r=>`<div class="log-item">
+    <div class="log-date">${r.date}</div>
+    <div class="log-values">
+      ${r.weight!=null?`<span>體重 <b>${r.weight}</b>kg</span>`:''}
+      ${r.fat!=null?`<span>體脂 <b>${r.fat}</b>%</span>`:''}
+      ${r.bmi!=null?`<span>BMI <b>${r.bmi}</b></span>`:''}
+      ${r.visceral!=null?`<span>內臟 <b>${r.visceral}</b></span>`:''}
+      ${r.water!=null?`<span>水 <b>${r.water}</b>cc</span>`:''}
+      ${r.vitality!=null?`<span>活力 <b>${r.vitality}</b>cc</span>`:''}
+    </div>
+    ${r.note?`<div class="log-note">${r.note}</div>`:''}
+  </div>`).join('');
+}
+
+// ══ 目標 ══
+function saveGoals(){
+  goals={weight:nn(pv('goal-weight')),fat:nn(pv('goal-fat')),visceral:nn(pv('goal-visceral')),water:nn(pv('goal-water'))};
+  lset('bodyGoals',goals);renderGoals();renderTodaySummary();pushSync();showToast('✓ 目標已儲存');
+}
+function renderGoals(){
+  if(goals.weight)document.getElementById('goal-weight').value=goals.weight;
+  if(goals.fat)document.getElementById('goal-fat').value=goals.fat;
+  if(goals.visceral)document.getElementById('goal-visceral').value=goals.visceral;
+  if(goals.water)document.getElementById('goal-water').value=goals.water;
+  const latest=records[records.length-1];
+  const el=document.getElementById('goalProgress');
+  if(!latest){el.innerHTML=`<div class="empty">尚無記錄</div>`;return}
+  const rows=[
+    {key:'weight',label:'體重',unit:'kg',higher:false},
+    {key:'fat',label:'體脂率',unit:'%',higher:false},
+    {key:'visceral',label:'內臟脂肪',unit:'',higher:false},
+    {key:'water',label:'今日喝水',unit:'cc',higher:true}
+  ].filter(r=>goals[r.key]!=null&&latest[r.key]!=null);
+  if(!rows.length){el.innerHTML=`<div class="empty">請先設定目標</div>`;return}
+  el.innerHTML=`<div class="card-title">目標進度</div>`+rows.map(r=>{
+    const cur=latest[r.key],goal=goals[r.key];
+    let pct,reached;
+    if(r.higher){pct=Math.min(100,Math.round(cur/goal*100));reached=cur>=goal;}
+    else{const s=records.find(x=>x[r.key]!=null)?.[r.key]??cur;const tot=Math.abs(s-goal)||1;pct=Math.min(100,Math.round((1-Math.abs(cur-goal)/tot)*100));reached=cur<=goal;}
+    return`<div class="goal-row"><div><div class="goal-label">${r.label}</div>
+      <div class="goal-sub">目前 ${cur}${r.unit} → 目標 ${goal}${r.unit}</div>
+      <div class="prog-bar"><div class="prog-fill${reached?'':' danger'}" style="width:${pct}%"></div></div></div>
+      <div class="goal-val">${pct}%${reached?'<span class="badge badge-good">達標</span>':'<span class="badge badge-warn">加油</span>'}</div></div>`;
+  }).join('');
+}
+
+// ══ 庫存 ══
+function getInv(k){return inventory[k]??0}
+function changeInv(k,d){
+  inventory[k]=Math.max(0,(inventory[k]??0)+d);
+  const el=document.getElementById('inv-qty-'+k);
+  if(el)el.textContent=inventory[k];
+  renderInvAlert();
+}
+function saveInventory(){lset('bodyInventory',inventory);pushSync();showToast('✓ 庫存已儲存')}
+function renderInventory(){
+  document.getElementById('inv-protein').innerHTML=PROTEIN.map(n=>invRow('p_'+n,n,'蛋白粉・罐')).join('');
+  document.getElementById('inv-supplement').innerHTML=SUPPS.map(n=>invRow('s_'+n,n,'補充品・瓶')).join('');
+  renderInvAlert();
+}
+function invRow(key,name,sub){
+  return`<div class="inv-item">
+    <div><div class="inv-name">${name}</div><div class="inv-unit">${sub}</div></div>
+    <div class="inv-controls">
+      <button class="inv-btn" onclick="changeInv('${key}',-1)">−</button>
+      <div class="inv-qty" id="inv-qty-${key}">${getInv(key)}</div>
+      <button class="inv-btn plus" onclick="changeInv('${key}',1)">+</button>
+    </div>
+  </div>`;
+}
+function renderInvAlert(){
+  const all=[...PROTEIN.map(n=>({k:'p_'+n,name:n+'蛋白粉',unit:'罐'})),...SUPPS.map(n=>({k:'s_'+n,name:n,unit:'瓶'}))];
+  const alerts=all.filter(x=>getInv(x.k)<=2).map(x=>{
+    const q=getInv(x.k);
+    return`<div style="font-size:13px;padding:6px 0;color:${q===0?'var(--orange)':'#854F0B'};border-bottom:.5px solid var(--border)">${q===0?'⚠️':'📉'} ${x.name} ${q===0?'已用完':'剩 '+q+' '+x.unit+'，快補貨'}</div>`;
+  });
+  document.getElementById('inv-alert').innerHTML=alerts.length?alerts.join(''):`<div style="font-size:13px;color:var(--green);padding:4px 0">✓ 所有庫存充足</div>`;
+}
+
+// ══ 喝水提醒 ══
+function initNotifications(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='granted'){
+    document.getElementById('notif-ok').style.display='block';
+  } else if(Notification.permission==='denied'){
+    document.getElementById('notif-deny').style.display='block';
+  } else {
+    Notification.requestPermission().then(p=>{
+      if(p==='granted')document.getElementById('notif-ok').style.display='block';
+      if(p==='denied')document.getElementById('notif-deny').style.display='block';
+    });
+  }
+}
+
+function renderReminders(){
+  document.getElementById('reminder-list').innerHTML=reminders.map((r,i)=>`
+    <div class="reminder-item">
+      <div>
+        <div class="reminder-label">${r.label}</div>
+        <div class="reminder-sub">${r.sub}</div>
+      </div>
+      <div class="reminder-right">
+        <input type="time" class="reminder-time" value="${r.time}" onchange="reminders[${i}].time=this.value">
+        <label class="toggle">
+          <input type="checkbox" ${r.enabled?'checked':''} onchange="reminders[${i}].enabled=this.checked">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>`).join('');
+}
+
+function saveReminders(){
+  lset('bodyReminders',reminders);
+  scheduleAllReminders();
+  showToast('✓ 提醒設定已儲存');
+}
+
+function scheduleAllReminders(){
+  // 清除舊計時器
+  reminderTimers.forEach(t=>clearTimeout(t));
+  reminderTimers=[];
+  reminders.filter(r=>r.enabled).forEach(r=>{
+    scheduleReminder(r);
+  });
+}
+
+function scheduleReminder(r){
+  const now=new Date();
+  const [h,m]=r.time.split(':').map(Number);
+  const target=new Date(now);
+  target.setHours(h,m,0,0);
+  if(target<=now)target.setDate(target.getDate()+1);
+  const delay=target-now;
+  const timer=setTimeout(()=>{
+    fireReminder(r);
+    // 重新排隔天同一時間
+    if(r.enabled) scheduleReminder(r);
+  },delay);
+  reminderTimers.push(timer);
+}
+
+function fireReminder(r){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const d=today();
+  const rec=records.find(x=>x.date===d);
+  const waterDone=rec?.water??0;
+  const waterGoal=goals.water??2500;
+  const pct=Math.min(100,Math.round(waterDone/waterGoal*100));
+  const encourage=ENCOURAGE[Math.floor(Math.random()*ENCOURAGE.length)];
+  const body=waterDone>0
+    ?`今日已喝 ${waterDone}cc（${pct}%）\n${encourage}`
+    :`今天還沒記錄喝水量，記得補水！\n${encourage}`;
+  new Notification(`💧 ${r.label}`,{body,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💧</text></svg>'});
+}
+
+function testNotif(){
+  if(!('Notification' in window)){showToast('此瀏覽器不支援通知');return}
+  if(Notification.permission!=='granted'){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){document.getElementById('notif-ok').style.display='block';fireReminder({label:'測試通知'});}
+      else{document.getElementById('notif-deny').style.display='block';}
+    });
+  } else {
+    fireReminder({label:'測試通知'});
+    showToast('已送出測試通知！');
+  }
+}
+
+// ══ CSV ══
+function exportCSV(){
+  if(!records.length){showToast('尚無記錄可匯出');return}
+  const hdr='日期,體重(kg),體脂率(%),BMI,內臟脂肪,喝水(cc),活力飲品(cc),備註';
+  const rows=records.map(r=>[r.date,r.weight??'',r.fat??'',r.bmi??'',r.visceral??'',r.water??'',r.vitality??'',`"${(r.note||'').replace(/"/g,'""')}"`].join(','));
+  const csv='\uFEFF'+[hdr,...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='體態記錄_'+today()+'.csv';a.click();
+  showToast('✓ CSV 已匯出');
+}
+
+// ══ 雲端同步 ══
+function updateSyncBtn(){
+  const btn=document.getElementById('syncBtn');
+  btn.textContent=syncCfg.url?'⟳ 同步':'☁ 設定同步';
+  btn.className='sync-btn'+(syncCfg.url?' sync-ok':'');
+}
+function triggerSync(silent=false){
+  if(!syncCfg.url){document.getElementById('setupModal').style.display='flex';return}
+  if(!silent)showToast('同步中…');
+  fetch(syncCfg.url+'/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Token':syncCfg.token||''},body:JSON.stringify({records,goals,inventory})})
+    .then(r=>r.json()).then(data=>{
+      if(data.records)records=data.records;
+      if(data.goals)goals=data.goals;
+      if(data.inventory)inventory=data.inventory;
+      lset('bodyRecords',records);lset('bodyGoals',goals);lset('bodyInventory',inventory);
+      renderTodaySummary();
+      if(!silent)showToast('✓ 同步完成');
+    }).catch(()=>{if(!silent)showToast('❌ 同步失敗')});
+}
+function pushSync(){
+  if(!syncCfg.url)return;
+  fetch(syncCfg.url+'/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Token':syncCfg.token||''},body:JSON.stringify({records,goals,inventory})}).catch(()=>{});
+}
+function closeModal(){document.getElementById('setupModal').style.display='none'}
+function saveSyncConfig(){
+  const url=document.getElementById('cf-url').value.trim().replace(/\/$/,'');
+  const token=document.getElementById('cf-token').value.trim();
+  if(!url){showToast('請輸入 Worker 網址');return}
+  syncCfg={url,token};lset('bodySyncCfg',syncCfg);closeModal();updateSyncBtn();triggerSync();
+}
+function copyWorkerCode(){
+  const code=`export default {
+  async fetch(request, env) {
+    const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type,X-Token'};
+    if(request.method==='OPTIONS') return new Response(null,{headers:cors});
+    const token=request.headers.get('X-Token')||'';
+    const SECRET=env.SECRET||'';
+    if(SECRET&&token!==SECRET) return new Response('Unauthorized',{status:401,headers:cors});
+    const url=new URL(request.url);
+    if(url.pathname==='/sync'&&request.method==='POST'){
+      const incoming=await request.json();
+      const stored=JSON.parse(await env.KV.get('data')||'{}');
+      const merged={
+        records:merge(incoming.records||[],stored.records||[]),
+        goals:{...stored.goals,...incoming.goals},
+        inventory:{...stored.inventory,...incoming.inventory},
+      };
+      await env.KV.put('data',JSON.stringify(merged));
+      return new Response(JSON.stringify(merged),{headers:{...cors,'Content-Type':'application/json'}});
+    }
+    return new Response('Not found',{status:404,headers:cors});
+  }
+};
+function merge(a,b){const m={};[...a,...b].forEach(r=>m[r.date]=r);return Object.values(m).sort((x,y)=>x.date.localeCompare(y.date));}`;
+  navigator.clipboard.writeText(code).then(()=>showToast('✓ 程式碼已複製'));
+}
 </script>
 </body>
 </html>
