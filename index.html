@@ -202,6 +202,10 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
     <div id="inv-supplement"></div>
   </div>
   <div class="card">
+    <div class="inv-group-title">📦 其他（盒）</div>
+    <div id="inv-box"></div>
+  </div>
+  <div class="card">
     <div class="card-title">庫存警示</div>
     <div id="inv-alert"></div>
   </div>
@@ -216,6 +220,31 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
     <div class="card-title">💧 喝水提醒設定</div>
     <div id="reminder-list"></div>
     <button class="btn-primary" style="margin-top:14px" onclick="saveReminders()">儲存提醒設定</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔄 自動同步設定</div>
+    <div class="reminder-item">
+      <div>
+        <div class="reminder-label">開啟自動同步</div>
+        <div class="reminder-sub">定時從雲端拉取最新資料</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="auto-refresh-toggle" onchange="toggleAutoRefresh(this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="reminder-item" id="auto-refresh-interval-row">
+      <div>
+        <div class="reminder-label">同步間隔</div>
+        <div class="reminder-sub">每隔幾分鐘自動同步一次</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="auto-refresh-minutes" min="1" max="120" step="1" style="width:70px;text-align:center" value="30">
+        <span style="font-size:13px;color:var(--text2)">分鐘</span>
+      </div>
+    </div>
+    <button class="btn-primary" style="margin-top:14px" onclick="saveAutoRefresh()">儲存同步設定</button>
   </div>
 
   <div class="card">
@@ -261,8 +290,9 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
 
 <script>
 // ══ 常數 ══
-const PROTEIN=['草莓','巧克力','巧餅','拿鐵','香草'];
-const SUPPS=['享纖','草濰','細洗','甲殼','濃縮液'];
+const PROTEIN=['草莓','巧克力','巧餅','拿鐵','香草','膠原蛋白','夜寧新'];
+const SUPPS=['享纖','草維','細喜','甲殼','濃縮液蘆薈汁'];
+const BOX_ITEMS=['檸檬氣泡片'];
 const CHART_KEYS={weight:'體重',fat:'體脂率',bmi:'BMI',visceral:'內臟脂肪',water:'喝水'};
 const UNITS={weight:'kg',fat:'%',bmi:'',visceral:'',water:'cc'};
 const COLORS={weight:'#178CBA',fat:'#D85A30',bmi:'#7F77DD',visceral:'#1D9E75',water:'#5AABFF'};
@@ -288,16 +318,18 @@ let goals=JSON.parse(localStorage.getItem('bodyGoals')||'{}');
 let inventory=JSON.parse(localStorage.getItem('bodyInventory')||'{}');
 let syncCfg=JSON.parse(localStorage.getItem('bodySyncCfg')||'{}');
 let reminders=JSON.parse(localStorage.getItem('bodyReminders')||JSON.stringify(DEFAULT_REMINDERS));
+let autoRefreshCfg=JSON.parse(localStorage.getItem('bodyAutoRefresh')||'{"enabled":false,"minutes":30}');
 let currentChart='weight', chartInstance=null;
-let reminderTimers=[];
+let reminderTimers=[], autoRefreshTimer=null;
 
 // ══ 初始化 ══
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
 renderTodaySummary();
 updateSyncBtn();
-if(syncCfg.url) triggerSync(true);
+if(syncCfg.url) triggerSync(true); // 開啟時自動同步
 initNotifications();
 scheduleAllReminders();
+startAutoRefresh();
 
 // ══ Toast ══
 function showToast(msg){
@@ -321,10 +353,12 @@ function switchTab(name){
 
 // ══ 記錄 ══
 function saveRecord(){
-  const w=pv('inp-weight'),f=pv('inp-fat'),b=pv('inp-bmi'),
+  const w=pv('inp-weight'),f=pv('inp-fat'),
         v=pv('inp-visceral'),wa=pv('inp-water'),vi=pv('inp-vitality');
+  // BMI 從體重自動計算，不從欄位讀取
+  const b=(!isNaN(w)&&w>0)?Math.round(w/(HEIGHT_M*HEIGHT_M)*10)/10:NaN;
   const note=document.getElementById('inp-note').value.trim();
-  if([w,f,b,v,wa,vi].every(isNaN)){showToast('請至少輸入一項數值');return}
+  if([w,f,v,wa,vi].every(isNaN)){showToast('請至少輸入一項數值');return}
   const d=today();
   const idx=records.findIndex(r=>r.date===d);
   const existing=idx>=0?records[idx]:{};
@@ -341,7 +375,8 @@ function saveRecord(){
   if(idx>=0)records[idx]=rec;else records.push(rec);
   records.sort((a,b)=>a.date.localeCompare(b.date));
   lset('bodyRecords',records);
-  ['weight','fat','bmi','visceral','water','vitality','note'].forEach(k=>document.getElementById('inp-'+k).value='');
+  ['weight','fat','visceral','water','vitality','note'].forEach(k=>document.getElementById('inp-'+k).value='');
+  document.getElementById('inp-bmi').value='';
   renderTodaySummary();
   pushSync();
   showToast('✓ 記錄已儲存');
@@ -471,32 +506,38 @@ function renderGoals(){
 // ══ 庫存 ══
 function getInv(k){return inventory[k]??0}
 function changeInv(k,d){
-  inventory[k]=Math.max(0,(inventory[k]??0)+d);
+  inventory[k]=Math.max(0,Math.round(((inventory[k]??0)+d)*10)/10);
   const el=document.getElementById('inv-qty-'+k);
-  if(el)el.textContent=inventory[k];
+  if(el){
+    const isInt=Number.isInteger(d);
+    el.textContent=isInt?Math.round(inventory[k]).toString():inventory[k].toFixed(1);
+  }
   renderInvAlert();
 }
 function saveInventory(){lset('bodyInventory',inventory);pushSync();showToast('✓ 庫存已儲存')}
 function renderInventory(){
-  document.getElementById('inv-protein').innerHTML=PROTEIN.map(n=>invRow('p_'+n,n,'蛋白粉・罐')).join('');
-  document.getElementById('inv-supplement').innerHTML=SUPPS.map(n=>invRow('s_'+n,n,'補充品・瓶')).join('');
+  document.getElementById('inv-protein').innerHTML=PROTEIN.map(n=>invRow('p_'+n,n,'蛋白粉・罐',0.1)).join('');
+  document.getElementById('inv-supplement').innerHTML=SUPPS.map(n=>invRow('s_'+n,n,'補充品・瓶',0.1)).join('');
+  document.getElementById('inv-box').innerHTML=BOX_ITEMS.map(n=>invRow('b_'+n,n,'盒',1)).join('');
   renderInvAlert();
 }
-function invRow(key,name,sub){
+function invRow(key,name,sub,step=1){
+  const raw=inventory[key]??0;
+  const qty=step<1?raw.toFixed(1):Math.round(raw).toString();
   return`<div class="inv-item">
     <div><div class="inv-name">${name}</div><div class="inv-unit">${sub}</div></div>
     <div class="inv-controls">
-      <button class="inv-btn" onclick="changeInv('${key}',-1)">−</button>
-      <div class="inv-qty" id="inv-qty-${key}">${getInv(key)}</div>
-      <button class="inv-btn plus" onclick="changeInv('${key}',1)">+</button>
+      <button class="inv-btn" onclick="changeInv('${key}',${-step})">−</button>
+      <div class="inv-qty" id="inv-qty-${key}">${qty}</div>
+      <button class="inv-btn plus" onclick="changeInv('${key}',${step})">+</button>
     </div>
   </div>`;
 }
 function renderInvAlert(){
-  const all=[...PROTEIN.map(n=>({k:'p_'+n,name:n+'蛋白粉',unit:'罐'})),...SUPPS.map(n=>({k:'s_'+n,name:n,unit:'瓶'}))];
-  const alerts=all.filter(x=>getInv(x.k)<=2).map(x=>{
+  const all=[...PROTEIN.map(n=>({k:'p_'+n,name:n+'蛋白粉',unit:'罐'})),...SUPPS.map(n=>({k:'s_'+n,name:n,unit:'瓶'})),...BOX_ITEMS.map(n=>({k:'b_'+n,name:n,unit:'盒'}))];
+  const alerts=all.filter(x=>getInv(x.k)<=0.2).map(x=>{
     const q=getInv(x.k);
-    return`<div style="font-size:13px;padding:6px 0;color:${q===0?'var(--orange)':'#854F0B'};border-bottom:.5px solid var(--border)">${q===0?'⚠️':'📉'} ${x.name} ${q===0?'已用完':'剩 '+q+' '+x.unit+'，快補貨'}</div>`;
+    return`<div style="font-size:13px;padding:6px 0;color:${q===0?'var(--orange)':'#854F0B'};border-bottom:.5px solid var(--border)">${q===0?'⚠️':'📉'} ${x.name} ${q===0?'已用完':'剩 '+q.toFixed(1)+' '+x.unit+'，快補貨'}</div>`;
   });
   document.getElementById('inv-alert').innerHTML=alerts.length?alerts.join(''):`<div style="font-size:13px;color:var(--green);padding:4px 0">✓ 所有庫存充足</div>`;
 }
@@ -531,6 +572,30 @@ function renderReminders(){
         </label>
       </div>
     </div>`).join('');
+  // 套用自動同步設定到 UI
+  const tog=document.getElementById('auto-refresh-toggle');
+  const minEl=document.getElementById('auto-refresh-minutes');
+  if(tog)tog.checked=autoRefreshCfg.enabled;
+  if(minEl)minEl.value=autoRefreshCfg.minutes;
+}
+
+function toggleAutoRefresh(enabled){
+  autoRefreshCfg.enabled=enabled;
+}
+function saveAutoRefresh(){
+  const mins=parseInt(document.getElementById('auto-refresh-minutes').value)||30;
+  autoRefreshCfg.minutes=Math.max(1,mins);
+  lset('bodyAutoRefresh',autoRefreshCfg);
+  startAutoRefresh();
+  showToast(autoRefreshCfg.enabled?`✓ 每 ${autoRefreshCfg.minutes} 分鐘自動同步`:'✓ 自動同步已關閉');
+}
+function startAutoRefresh(){
+  if(autoRefreshTimer){clearInterval(autoRefreshTimer);autoRefreshTimer=null;}
+  if(autoRefreshCfg.enabled&&syncCfg.url){
+    autoRefreshTimer=setInterval(()=>{
+      triggerSync(true);
+    }, autoRefreshCfg.minutes*60*1000);
+  }
 }
 
 function saveReminders(){
