@@ -326,8 +326,18 @@ function saveRecord(){
   const note=document.getElementById('inp-note').value.trim();
   if([w,f,b,v,wa,vi].every(isNaN)){showToast('請至少輸入一項數值');return}
   const d=today();
-  const rec={date:d,weight:nn(w),fat:nn(f),bmi:nn(b),visceral:nn(v),water:nn(wa),vitality:nn(vi),note};
   const idx=records.findIndex(r=>r.date===d);
+  const existing=idx>=0?records[idx]:{};
+  const rec={
+    date:d,
+    weight:nn(w)!==null?nn(w):existing.weight??null,
+    fat:nn(f)!==null?nn(f):existing.fat??null,
+    bmi:nn(b)!==null?nn(b):existing.bmi??null,
+    visceral:nn(v)!==null?nn(v):existing.visceral??null,
+    water:nn(wa)!==null?nn(wa):existing.water??null,
+    vitality:nn(vi)!==null?nn(vi):existing.vitality??null,
+    note:note||existing.note||''
+  };
   if(idx>=0)records[idx]=rec;else records.push(rec);
   records.sort((a,b)=>a.date.localeCompare(b.date));
   lset('bodyRecords',records);
