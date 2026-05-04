@@ -335,7 +335,14 @@ let reminderTimers=[], autoRefreshTimer=null;
 
 // ══ 初始化 ══
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
-document.getElementById('inp-date').value=today();
+// iOS Safari 相容：用 JS 設定日期避免時區問題
+(function(){
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  document.getElementById('inp-date').value=`${y}-${m}-${day}`;
+})();
 renderTodaySummary();
 updateSyncBtn();
 if(syncCfg.url) triggerSync(true);
@@ -382,7 +389,8 @@ function saveRecord(){
     visceral:nn(v)!==null?nn(v):existing.visceral??null,
     water:nn(wa)!==null?nn(wa):existing.water??null,
     vitality:nn(vi)!==null?nn(vi):existing.vitality??null,
-    note:note||existing.note||''
+    note:note||existing.note||'',
+    updatedAt:Date.now() // 時間戳記，同步時以較新的為主
   };
   if(idx>=0)records[idx]=rec;else records.push(rec);
   records.sort((a,b)=>a.date.localeCompare(b.date));
@@ -719,9 +727,21 @@ function triggerSync(silent=false){
   if(!silent)showToast('同步中…');
   fetch(syncCfg.url+'/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Token':syncCfg.token||''},body:JSON.stringify({records,goals,inventory})})
     .then(r=>r.json()).then(data=>{
-      if(data.records)records=data.records;
-      if(data.goals)goals=data.goals;
-      if(data.inventory)inventory=data.inventory;
+      // 合併記錄：以 updatedAt 較新的為主，保護補登資料
+      if(data.records){
+        const localMap={};
+        records.forEach(r=>localMap[r.date]=r);
+        data.records.forEach(r=>{
+          const local=localMap[r.date];
+          if(!local||(r.updatedAt||0)>(local.updatedAt||0)){
+            localMap[r.date]=r;
+          }
+        });
+        records=Object.values(localMap).sort((a,b)=>a.date.localeCompare(b.date));
+      }
+      // 目標和庫存：雲端和本機合併，以本機為主（本機剛改過）
+      if(data.goals) goals={...data.goals,...goals};
+      if(data.inventory) inventory={...data.inventory,...inventory};
       lset('bodyRecords',records);lset('bodyGoals',goals);lset('bodyInventory',inventory);
       renderTodaySummary();
       setSyncLight('ok');
