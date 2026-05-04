@@ -387,8 +387,8 @@ function saveRecord(){
     fat:nn(f)!==null?nn(f):existing.fat??null,
     bmi:nn(b)!==null?nn(b):existing.bmi??null,
     visceral:nn(v)!==null?nn(v):existing.visceral??null,
-    water:nn(wa)!==null?nn(wa):existing.water??null,
-    vitality:nn(vi)!==null?nn(vi):existing.vitality??null,
+    water:nnPos(wa)!==null?nnPos(wa):existing.water??null,
+    vitality:nnPos(vi)!==null?nnPos(vi):existing.vitality??null,
     note:note||existing.note||'',
     updatedAt:Date.now() // 時間戳記，同步時以較新的為主
   };
@@ -415,6 +415,7 @@ function autoCalcBMI(weightVal){
 }
 function pv(id){return parseFloat(document.getElementById(id).value)}
 function nn(v){return isNaN(v)?null:v}
+function nnPos(v){return (isNaN(v)||v<=0)?null:v} // 0 也視為無效
 function today(){return new Date().toISOString().slice(0,10)}
 function lset(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
@@ -476,18 +477,19 @@ function renderTrend(){
 }
 
 // ══ 歷史 ══
+function fmt(v,dec=1){return v!=null?parseFloat(v).toFixed(dec).replace(/\.0$/,''):null}
 function renderHistory(){
   const el=document.getElementById('historyList');
   if(!records.length){el.innerHTML=`<div class="empty">尚無記錄</div>`;return}
   el.innerHTML=[...records].reverse().map(r=>`<div class="log-item">
     <div class="log-date">${r.date}</div>
     <div class="log-values">
-      ${r.weight!=null?`<span>體重 <b>${r.weight}</b>kg</span>`:''}
-      ${r.fat!=null?`<span>體脂 <b>${r.fat}</b>%</span>`:''}
-      ${r.bmi!=null?`<span>BMI <b>${r.bmi}</b></span>`:''}
-      ${r.visceral!=null?`<span>內臟 <b>${r.visceral}</b></span>`:''}
-      ${r.water!=null?`<span>水 <b>${r.water}</b>cc</span>`:''}
-      ${r.vitality!=null?`<span>活力 <b>${r.vitality}</b>cc</span>`:''}
+      ${r.weight!=null?`<span>體重 <b>${fmt(r.weight)}</b>kg</span>`:''}
+      ${r.fat!=null?`<span>體脂 <b>${fmt(r.fat)}</b>%</span>`:''}
+      ${r.bmi!=null?`<span>BMI <b>${fmt(r.bmi)}</b></span>`:''}
+      ${r.visceral!=null?`<span>內臟 <b>${fmt(r.visceral)}</b></span>`:''}
+      ${(r.water!=null&&r.water>0)?`<span>水 <b>${r.water}</b>cc</span>`:''}
+      ${(r.vitality!=null&&r.vitality>0)?`<span>活力 <b>${r.vitality}</b>cc</span>`:''}
     </div>
     ${r.note?`<div class="log-note">${r.note}</div>`:''}
   </div>`).join('');
