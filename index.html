@@ -729,19 +729,29 @@ function triggerSync(silent=false){
   if(!silent)showToast('同步中…');
   fetch(syncCfg.url+'/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Token':syncCfg.token||''},body:JSON.stringify({records,goals,inventory})})
     .then(r=>r.json()).then(data=>{
-      // 合併記錄：以 updatedAt 較新的為主，保護補登資料
       if(data.records){
+        // 欄位層級合併：每個欄位取有值的那個，雲端優先補本地沒有的
+        const FIELDS=['weight','fat','bmi','visceral','water','vitality','note'];
         const localMap={};
-        records.forEach(r=>localMap[r.date]=r);
+        records.forEach(r=>localMap[r.date]={...r});
         data.records.forEach(r=>{
-          const local=localMap[r.date];
-          if(!local||(r.updatedAt||0)>(local.updatedAt||0)){
-            localMap[r.date]=r;
+          if(!localMap[r.date]){
+            localMap[r.date]={...r};
+          } else {
+            FIELDS.forEach(f=>{
+              const cloudVal=r[f];
+              const localVal=localMap[r.date][f];
+              // 雲端有值且本地沒有（null/undefined/0）→ 用雲端的
+              if(cloudVal!==null&&cloudVal!==undefined&&cloudVal!==''&&cloudVal!==0){
+                if(localVal===null||localVal===undefined||localVal===''||localVal===0){
+                  localMap[r.date][f]=cloudVal;
+                }
+              }
+            });
           }
         });
         records=Object.values(localMap).sort((a,b)=>a.date.localeCompare(b.date));
       }
-      // 目標和庫存：雲端和本機合併，以本機為主（本機剛改過）
       if(data.goals) goals={...data.goals,...goals};
       if(data.inventory) inventory={...data.inventory,...inventory};
       lset('bodyRecords',records);lset('bodyGoals',goals);lset('bodyInventory',inventory);
