@@ -205,7 +205,7 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
     <button class="btn-secondary" onclick="saveInventory()">儲存庫存</button>
   </div>
   <div class="card">
-    <div class="inv-group-title">🥛 蛋白粉（罐）</div>
+    <div class="inv-group-title">🥛 補充品（罐）</div>
     <div id="inv-protein"></div>
   </div>
   <div class="card">
@@ -301,8 +301,8 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
 
 <script>
 // ══ 常數 ══
-const PROTEIN=['草莓','巧克力','巧餅','拿鐵','香草','膠原蛋白','夜寧新'];
-const SUPPS=['享纖','草維','細喜','甲殼','濃縮液蘆薈汁'];
+const PROTEIN=['蛋白粉','草莓','巧克力','巧餅','拿鐵','香草','膠原蛋白','夜寧新'];
+const SUPPS=['享纖','草維','細喜','甲殼','瓜茶','濃縮液蘆薈汁'];
 const BOX_ITEMS=['檸檬氣泡片'];
 const CHART_KEYS={weight:'體重',fat:'體脂率',bmi:'BMI',visceral:'內臟脂肪',water:'喝水'};
 const UNITS={weight:'kg',fat:'%',bmi:'',visceral:'',water:'cc'};
@@ -568,7 +568,7 @@ function invRow(key,name,sub,step,isDecimal){
 }
 function renderInvAlert(){
   const all=[
-    ...PROTEIN.map(n=>({k:'p_'+n,name:n+'蛋白粉',unit:'罐',dec:true})),
+    ...PROTEIN.map(n=>({k:'p_'+n,name:n,unit:'罐',dec:true})),
     ...SUPPS.map(n=>({k:'s_'+n,name:n,unit:'瓶',dec:false})),
     ...BOX_ITEMS.map(n=>({k:'b_'+n,name:n,unit:'盒',dec:false}))
   ];
