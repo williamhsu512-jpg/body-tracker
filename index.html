@@ -101,6 +101,12 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
 /* 同步後關閉按鈕 */
 .sync-close-btn{width:100%;padding:15px;font-size:17px;font-weight:600;background:var(--orange);color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:10px;display:none}
 .sync-close-btn.show{display:block}
+/* 計算機浮窗 */
+.calc-btn{padding:16px 8px;font-size:20px;font-weight:500;border:none;cursor:pointer;background:var(--card);color:var(--text);transition:opacity .1s;width:100%}
+.calc-btn:active{opacity:.5}
+.calc-op{background:#FF9F0A;color:#fff}
+.calc-eq{background:var(--accent);color:#fff}
+.calc-fn{background:#636366;color:#fff}
 .modal p{font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6}
 .modal input{margin-bottom:12px}
 .modal .close-btn{float:right;font-size:14px;color:var(--text2);background:none;border:none;cursor:pointer;margin-top:-28px}
@@ -275,7 +281,72 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
   <button class="btn-secondary" style="width:100%;margin-top:4px" onclick="testNotif()">🔔 測試通知</button>
 </div>
 
-<!-- Cloudflare 同步 Modal -->
+<!-- 計算機 -->
+<div class="section" id="sec-calc">
+  <div class="card" style="max-width:360px;margin:0 auto">
+    <div id="calc-display" style="background:var(--input-bg);border-radius:12px;padding:16px 20px;margin-bottom:14px;text-align:right">
+      <div id="calc-expr" style="font-size:14px;color:var(--text2);min-height:20px;margin-bottom:4px;word-break:break-all"></div>
+      <div id="calc-result" style="font-size:36px;font-weight:600;word-break:break-all">0</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <button class="calc-btn calc-fn" onclick="calcInput('AC')">AC</button>
+      <button class="calc-btn calc-fn" onclick="calcInput('+/-')">+/-</button>
+      <button class="calc-btn calc-fn" onclick="calcInput('%')">%</button>
+      <button class="calc-btn calc-op" onclick="calcInput('÷')">÷</button>
+
+      <button class="calc-btn" onclick="calcInput('7')">7</button>
+      <button class="calc-btn" onclick="calcInput('8')">8</button>
+      <button class="calc-btn" onclick="calcInput('9')">9</button>
+      <button class="calc-btn calc-op" onclick="calcInput('×')">×</button>
+
+      <button class="calc-btn" onclick="calcInput('4')">4</button>
+      <button class="calc-btn" onclick="calcInput('5')">5</button>
+      <button class="calc-btn" onclick="calcInput('6')">6</button>
+      <button class="calc-btn calc-op" onclick="calcInput('-')">−</button>
+
+      <button class="calc-btn" onclick="calcInput('1')">1</button>
+      <button class="calc-btn" onclick="calcInput('2')">2</button>
+      <button class="calc-btn" onclick="calcInput('3')">3</button>
+      <button class="calc-btn calc-op" onclick="calcInput('+')">+</button>
+
+<!-- 浮窗計算機 -->
+<button id="calc-fab" onclick="toggleCalc()" style="position:fixed;bottom:24px;right:20px;width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;font-size:24px;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:150;display:flex;align-items:center;justify-content:center">🧮</button>
+
+<div id="calc-float" style="display:none;position:fixed;bottom:90px;right:16px;width:300px;background:var(--card);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:149;overflow:hidden">
+  <!-- 拖動標題列 -->
+  <div id="calc-drag-bar" style="background:var(--accent);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;cursor:grab;user-select:none">
+    <span style="color:#fff;font-size:15px;font-weight:600">計算機</span>
+    <button onclick="toggleCalc()" style="background:rgba(255,255,255,.25);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <!-- 顯示區 -->
+  <div style="background:var(--input-bg);padding:14px 18px;text-align:right">
+    <div id="calc-expr" style="font-size:13px;color:var(--text2);min-height:18px;margin-bottom:4px;word-break:break-all"></div>
+    <div id="calc-result" style="font-size:34px;font-weight:600;word-break:break-all">0</div>
+  </div>
+  <!-- 按鍵區 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)">
+    <button class="calc-btn calc-fn" onclick="calcInput('AC')">AC</button>
+    <button class="calc-btn calc-fn" onclick="calcInput('+/-')">+/-</button>
+    <button class="calc-btn calc-fn" onclick="calcInput('%')">%</button>
+    <button class="calc-btn calc-op" onclick="calcInput('÷')">÷</button>
+    <button class="calc-btn" onclick="calcInput('7')">7</button>
+    <button class="calc-btn" onclick="calcInput('8')">8</button>
+    <button class="calc-btn" onclick="calcInput('9')">9</button>
+    <button class="calc-btn calc-op" onclick="calcInput('×')">×</button>
+    <button class="calc-btn" onclick="calcInput('4')">4</button>
+    <button class="calc-btn" onclick="calcInput('5')">5</button>
+    <button class="calc-btn" onclick="calcInput('6')">6</button>
+    <button class="calc-btn calc-op" onclick="calcInput('-')">−</button>
+    <button class="calc-btn" onclick="calcInput('1')">1</button>
+    <button class="calc-btn" onclick="calcInput('2')">2</button>
+    <button class="calc-btn" onclick="calcInput('3')">3</button>
+    <button class="calc-btn calc-op" onclick="calcInput('+')">+</button>
+    <button class="calc-btn" onclick="calcInput('0')" style="grid-column:span 2">0</button>
+    <button class="calc-btn" onclick="calcInput('.')">.</button>
+    <button class="calc-btn calc-eq" onclick="calcInput('=')">=</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="setupModal" style="display:none">
   <div class="modal">
     <h2>設定雲端同步</h2>
@@ -373,6 +444,53 @@ function switchTab(name){
   if(name==='inv')renderInventory();
   if(name==='remind')renderReminders();
 }
+
+// ══ 浮窗計算機 ══
+let calcVisible=false;
+function toggleCalc(){
+  calcVisible=!calcVisible;
+  document.getElementById('calc-float').style.display=calcVisible?'block':'none';
+  document.getElementById('calc-fab').textContent=calcVisible?'✕':'🧮';
+}
+// 拖動功能
+(function(){
+  let dragging=false,ox=0,oy=0,startX=0,startY=0;
+  document.addEventListener('DOMContentLoaded',()=>{
+    const bar=document.getElementById('calc-drag-bar');
+    const box=document.getElementById('calc-float');
+    if(!bar||!box)return;
+    bar.addEventListener('mousedown',e=>{
+      dragging=true;ox=box.offsetLeft;oy=box.offsetTop;
+      startX=e.clientX;startY=e.clientY;
+      bar.style.cursor='grabbing';
+    });
+    document.addEventListener('mousemove',e=>{
+      if(!dragging)return;
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      box.style.right='auto';box.style.bottom='auto';
+      box.style.left=Math.max(0,ox+dx)+'px';
+      box.style.top=Math.max(0,oy+dy)+'px';
+    });
+    document.addEventListener('mouseup',()=>{dragging=false;bar.style.cursor='grab';});
+    // 觸控拖動
+    bar.addEventListener('touchstart',e=>{
+      const t=e.touches[0];
+      dragging=true;ox=box.offsetLeft||window.innerWidth-316;
+      oy=box.offsetTop||window.innerHeight-460;
+      startX=t.clientX;startY=t.clientY;
+      box.style.right='auto';box.style.bottom='auto';
+      box.style.left=ox+'px';box.style.top=oy+'px';
+    },{passive:true});
+    document.addEventListener('touchmove',e=>{
+      if(!dragging)return;
+      const t=e.touches[0];
+      const dx=t.clientX-startX,dy=t.clientY-startY;
+      box.style.left=Math.max(0,ox+dx)+'px';
+      box.style.top=Math.max(0,oy+dy)+'px';
+    },{passive:true});
+    document.addEventListener('touchend',()=>{dragging=false;});
+  });
+})();
 
 // ══ 記錄 ══
 function saveRecord(){
@@ -848,6 +966,52 @@ function copyWorkerCode(){
 };
 function merge(a,b){const m={};[...a,...b].forEach(r=>m[r.date]=r);return Object.values(m).sort((x,y)=>x.date.localeCompare(y.date));}`;
   navigator.clipboard.writeText(code).then(()=>showToast('✓ 程式碼已複製'));
+}
+
+// ══ 計算機 ══
+let calcCurrent='0', calcExpr='', calcOperator=null, calcWaitNext=false;
+function calcInput(v){
+  const res=document.getElementById('calc-result');
+  const expr=document.getElementById('calc-expr');
+  if(v==='AC'){calcCurrent='0';calcExpr='';calcOperator=null;calcWaitNext=false;}
+  else if(v==='+/-'){calcCurrent=(parseFloat(calcCurrent)*-1).toString();}
+  else if(v==='%'){calcCurrent=(parseFloat(calcCurrent)/100).toString();}
+  else if(v==='.'){ if(!calcCurrent.includes('.'))calcCurrent+='.'; }
+  else if(['÷','×','-','+'].includes(v)){
+    if(calcOperator&&!calcWaitNext){
+      calcCurrent=calcCompute(calcExpr.split(' ')[0],calcOperator,calcCurrent);
+    }
+    calcOperator=v; calcExpr=calcCurrent+' '+v; calcWaitNext=true;
+  }
+  else if(v==='='){
+    if(calcOperator){
+      const parts=calcExpr.split(' ');
+      const prev=parts[0],op=parts[1];
+      calcCurrent=calcCompute(prev,op,calcCurrent);
+      calcExpr=calcExpr+' '+calcCurrent+' =';
+      calcOperator=null; calcWaitNext=true;
+    }
+  }
+  else{ // 數字
+    if(calcWaitNext){calcCurrent=v;calcWaitNext=false;}
+    else{calcCurrent=calcCurrent==='0'?v:calcCurrent+v;}
+    if(calcOperator) calcExpr=calcExpr.split(' ').slice(0,2).join(' ')+' '+calcCurrent;
+  }
+  // 顯示
+  const num=parseFloat(calcCurrent);
+  res.textContent=isNaN(num)?'錯誤':num.toLocaleString('zh-TW',{maximumFractionDigits:10});
+  expr.textContent=calcExpr;
+}
+function calcCompute(a,op,b){
+  const x=parseFloat(a),y=parseFloat(b);
+  if(isNaN(x)||isNaN(y))return'0';
+  let r;
+  if(op==='÷')r=y===0?'錯誤':x/y;
+  else if(op==='×')r=x*y;
+  else if(op==='-')r=x-y;
+  else if(op==='+')r=x+y;
+  else r=x;
+  return typeof r==='string'?r:parseFloat(r.toPrecision(12)).toString();
 }
 
 // ══ 離開頁面自動儲存 ══
