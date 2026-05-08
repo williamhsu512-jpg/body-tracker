@@ -281,41 +281,6 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
   <button class="btn-secondary" style="width:100%;margin-top:4px" onclick="testNotif()">🔔 測試通知</button>
 </div>
 
-<!-- 計算機 -->
-<div class="section" id="sec-calc">
-  <div class="card" style="max-width:360px;margin:0 auto">
-    <div id="calc-display" style="background:var(--input-bg);border-radius:12px;padding:16px 20px;margin-bottom:14px;text-align:right">
-      <div id="calc-expr" style="font-size:14px;color:var(--text2);min-height:20px;margin-bottom:4px;word-break:break-all"></div>
-      <div id="calc-result" style="font-size:36px;font-weight:600;word-break:break-all">0</div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-      <button class="calc-btn calc-fn" onclick="calcInput('AC')">AC</button>
-      <button class="calc-btn calc-fn" onclick="calcInput('+/-')">+/-</button>
-      <button class="calc-btn calc-fn" onclick="calcInput('%')">%</button>
-      <button class="calc-btn calc-op" onclick="calcInput('÷')">÷</button>
-
-      <button class="calc-btn" onclick="calcInput('7')">7</button>
-      <button class="calc-btn" onclick="calcInput('8')">8</button>
-      <button class="calc-btn" onclick="calcInput('9')">9</button>
-      <button class="calc-btn calc-op" onclick="calcInput('×')">×</button>
-
-      <button class="calc-btn" onclick="calcInput('4')">4</button>
-      <button class="calc-btn" onclick="calcInput('5')">5</button>
-      <button class="calc-btn" onclick="calcInput('6')">6</button>
-      <button class="calc-btn calc-op" onclick="calcInput('−')">−</button>
-
-      <button class="calc-btn" onclick="calcInput('1')">1</button>
-      <button class="calc-btn" onclick="calcInput('2')">2</button>
-      <button class="calc-btn" onclick="calcInput('3')">3</button>
-      <button class="calc-btn calc-op" onclick="calcInput('+')">+</button>
-
-      <button class="calc-btn" onclick="calcInput('0')" style="grid-column:span 2">0</button>
-      <button class="calc-btn" onclick="calcInput('.')">.</button>
-      <button class="calc-btn calc-eq" onclick="calcInput('=')">=</button>
-    </div>
-  </div>
-</div>
-
 <!-- 浮窗計算機 -->
 <button id="calc-fab" onclick="toggleCalc()" style="position:fixed;top:45%;right:8px;transform:translateY(-50%);width:44px;height:76px;border-radius:14px;background:#FF9F0A;color:#fff;font-size:20px;font-weight:600;border:3px solid #fff;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.4);z-index:9999;text-align:center;padding-top:12px">🧮<br><span style="font-size:10px">計算</span></button>
 
@@ -327,8 +292,8 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
   </div>
   <!-- 顯示區 -->
   <div style="background:var(--input-bg);padding:14px 18px;text-align:right">
-    <div id="calc-expr" style="font-size:13px;color:var(--text2);min-height:18px;margin-bottom:4px;word-break:break-all"></div>
-    <div id="calc-result" style="font-size:34px;font-weight:600;word-break:break-all">0</div>
+    <div id="fc-expr" style="font-size:13px;color:var(--text2);min-height:18px;margin-bottom:4px;word-break:break-all"></div>
+    <div id="fc-result" style="font-size:34px;font-weight:600;word-break:break-all">0</div>
   </div>
   <!-- 按鍵區 -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)">
@@ -980,8 +945,8 @@ function merge(a,b){const m={};[...a,...b].forEach(r=>m[r.date]=r);return Object
 // ══ 計算機 ══
 let calcCurrent='0', calcPrev=null, calcOp=null, calcJustCalc=false;
 function calcInput(v){
-  const res=document.getElementById('calc-result');
-  const expr=document.getElementById('calc-expr');
+  const res=document.getElementById('fc-result');
+  const expr=document.getElementById('fc-expr');
   if(!res||!expr)return;
   if(v==='AC'){
     calcCurrent='0';calcPrev=null;calcOp=null;calcJustCalc=false;
