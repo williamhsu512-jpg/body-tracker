@@ -310,9 +310,9 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
       <button class="calc-btn calc-op" onclick="calcInput('+')">+</button>
 
 <!-- 浮窗計算機 -->
-<button id="calc-fab" onclick="toggleCalc()" style="position:fixed;bottom:100px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:150;display:flex;align-items:center;justify-content:center">🧮</button>
+<button id="calc-fab" onclick="toggleCalc()" style="position:fixed;top:50%;right:0;transform:translateY(-50%);width:44px;height:54px;border-radius:12px 0 0 12px;background:var(--accent);color:#fff;font-size:22px;border:none;cursor:pointer;box-shadow:-4px 0 16px rgba(0,0,0,.25);z-index:500;display:flex;align-items:center;justify-content:center">🧮</button>
 
-<div id="calc-float" style="display:none;position:fixed;bottom:170px;right:16px;width:300px;background:var(--card);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:149;overflow:hidden">
+<div id="calc-float" style="display:none;position:fixed;top:50%;right:48px;transform:translateY(-50%);width:300px;background:var(--card);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:499;overflow:hidden">
   <!-- 拖動標題列 -->
   <div id="calc-drag-bar" style="background:var(--accent);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;cursor:grab;user-select:none">
     <span style="color:#fff;font-size:15px;font-weight:600">計算機</span>
