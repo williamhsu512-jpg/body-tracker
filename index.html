@@ -302,7 +302,7 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
       <button class="calc-btn" onclick="calcInput('4')">4</button>
       <button class="calc-btn" onclick="calcInput('5')">5</button>
       <button class="calc-btn" onclick="calcInput('6')">6</button>
-      <button class="calc-btn calc-op" onclick="calcInput('-')">−</button>
+      <button class="calc-btn calc-op" onclick="calcInput('−')">−</button>
 
       <button class="calc-btn" onclick="calcInput('1')">1</button>
       <button class="calc-btn" onclick="calcInput('2')">2</button>
@@ -343,7 +343,7 @@ input:focus,textarea:focus{box-shadow:0 0 0 2px var(--accent)}
     <button class="calc-btn" onclick="calcInput('4')">4</button>
     <button class="calc-btn" onclick="calcInput('5')">5</button>
     <button class="calc-btn" onclick="calcInput('6')">6</button>
-    <button class="calc-btn calc-op" onclick="calcInput('-')">−</button>
+    <button class="calc-btn calc-op" onclick="calcInput('−')">−</button>
     <button class="calc-btn" onclick="calcInput('1')">1</button>
     <button class="calc-btn" onclick="calcInput('2')">2</button>
     <button class="calc-btn" onclick="calcInput('3')">3</button>
@@ -977,49 +977,50 @@ function merge(a,b){const m={};[...a,...b].forEach(r=>m[r.date]=r);return Object
 }
 
 // ══ 計算機 ══
-let calcCurrent='0', calcExpr='', calcOperator=null, calcWaitNext=false;
+// ══ 計算機 ══
+let calcCurrent='0', calcPrev=null, calcOp=null, calcJustCalc=false;
 function calcInput(v){
   const res=document.getElementById('calc-result');
   const expr=document.getElementById('calc-expr');
-  if(v==='AC'){calcCurrent='0';calcExpr='';calcOperator=null;calcWaitNext=false;}
-  else if(v==='+/-'){calcCurrent=(parseFloat(calcCurrent)*-1).toString();}
-  else if(v==='%'){calcCurrent=(parseFloat(calcCurrent)/100).toString();}
-  else if(v==='.'){ if(!calcCurrent.includes('.'))calcCurrent+='.'; }
-  else if(['÷','×','-','+'].includes(v)){
-    if(calcOperator&&!calcWaitNext){
-      calcCurrent=calcCompute(calcExpr.split(' ')[0],calcOperator,calcCurrent);
+  if(!res||!expr)return;
+  if(v==='AC'){
+    calcCurrent='0';calcPrev=null;calcOp=null;calcJustCalc=false;
+    expr.textContent='';
+  } else if(v==='+/-'){
+    calcCurrent=(parseFloat(calcCurrent)*-1).toString();
+  } else if(v==='%'){
+    calcCurrent=(parseFloat(calcCurrent)/100).toString();
+  } else if(v==='.'){
+    if(calcJustCalc){calcCurrent='0.';calcJustCalc=false;}
+    else if(!calcCurrent.includes('.'))calcCurrent+='.';
+  } else if(['÷','×','−','+'].includes(v)){
+    if(calcOp&&!calcJustCalc){
+      calcCurrent=String(calcDo(parseFloat(calcPrev),calcOp,parseFloat(calcCurrent)));
     }
-    calcOperator=v; calcExpr=calcCurrent+' '+v; calcWaitNext=true;
-  }
-  else if(v==='='){
-    if(calcOperator){
-      const parts=calcExpr.split(' ');
-      const prev=parts[0],op=parts[1];
-      calcCurrent=calcCompute(prev,op,calcCurrent);
-      calcExpr=calcExpr+' '+calcCurrent+' =';
-      calcOperator=null; calcWaitNext=true;
+    calcPrev=calcCurrent;calcOp=v;calcJustCalc=true;
+    expr.textContent=calcPrev+' '+v;
+  } else if(v==='='){
+    if(calcOp&&calcPrev!==null){
+      const result=calcDo(parseFloat(calcPrev),calcOp,parseFloat(calcCurrent));
+      expr.textContent=calcPrev+' '+calcOp+' '+calcCurrent+' =';
+      calcCurrent=String(result);
+      calcPrev=null;calcOp=null;calcJustCalc=true;
     }
+  } else { // 數字
+    if(calcJustCalc){calcCurrent=v;calcJustCalc=false;}
+    else calcCurrent=calcCurrent==='0'?v:calcCurrent+v;
+    if(calcOp)expr.textContent=calcPrev+' '+calcOp+' '+calcCurrent;
   }
-  else{ // 數字
-    if(calcWaitNext){calcCurrent=v;calcWaitNext=false;}
-    else{calcCurrent=calcCurrent==='0'?v:calcCurrent+v;}
-    if(calcOperator) calcExpr=calcExpr.split(' ').slice(0,2).join(' ')+' '+calcCurrent;
-  }
-  // 顯示
-  const num=parseFloat(calcCurrent);
-  res.textContent=isNaN(num)?'錯誤':num.toLocaleString('zh-TW',{maximumFractionDigits:10});
-  expr.textContent=calcExpr;
+  const n=parseFloat(calcCurrent);
+  res.textContent=isNaN(n)?'錯誤':parseFloat(n.toPrecision(10)).toLocaleString('zh-TW',{maximumFractionDigits:8});
 }
-function calcCompute(a,op,b){
-  const x=parseFloat(a),y=parseFloat(b);
-  if(isNaN(x)||isNaN(y))return'0';
-  let r;
-  if(op==='÷')r=y===0?'錯誤':x/y;
-  else if(op==='×')r=x*y;
-  else if(op==='-')r=x-y;
-  else if(op==='+')r=x+y;
-  else r=x;
-  return typeof r==='string'?r:parseFloat(r.toPrecision(12)).toString();
+function calcDo(a,op,b){
+  if(isNaN(a)||isNaN(b))return 0;
+  if(op==='÷')return b===0?'錯誤':parseFloat((a/b).toPrecision(10));
+  if(op==='×')return parseFloat((a*b).toPrecision(10));
+  if(op==='−')return parseFloat((a-b).toPrecision(10));
+  if(op==='+')return parseFloat((a+b).toPrecision(10));
+  return a;
 }
 
 // ══ 離開頁面自動儲存 ══
